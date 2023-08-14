@@ -1,44 +1,59 @@
 var express = require("express");
 const Person = require("../models/person");
+const { connect } = require("http2");
 var router = express.Router();
 
 // Base route: /users
 
 // Get all users
-router.get("/", async function (req, res) {
+router.get("/", async function (req, res, next) {
   try {
     await connect();
     await Person.find();
-    res.json({ message: "Success" });
+    res.status(200).json({ message: "Gotteeeeem" });
   } catch (err) {
     console.error(err);
-    res.json({ error: "An error occurred while fetching users." });
+    next(err)
   }
 });
 
 // Get user details
-router.get("/:userEmail", async function (req, res) {
+router.get("/:userEmail", async function (req, res, next) {
   try {
     await connect();
     var email = req.params.email;
     var person = await Person.findOne({ email: email });
     if (!person) {
-      return res.json("Looks like this one was miscarried...");
+      return res.status(404).json({error: "Looks like this one was miscarried..."});
     }
-    res.json("Gottem!");
+    res.status(200).json({data: person, message: "Gottem!"});
   } catch (err) {
     console.log(err);
-    res.json("I think they're playing hide and seek...");
+    next(err)
   }
 });
 
 // Check credentials
-router.post("/checkCred", function (req, res) {
-  
+router.post("/checkCred", async function (req, res, next) {
+  try{
+    await connect()
+    var{email, password} = req.body
+    var person = await Person.findOne({email: email})
+    if(!person){
+      return res.status(404).json({message: "Probably playing hide and seek again..."})
+    }
+    if(person.password !== password){
+      return res.status(404).json({message: "Stranger danger!"})
+    }
+    res.status(200).json({message: "Ah yes, welcome back"})
+  }catch(err){
+    console.log(err)
+    next(err)
+  }
 });
 
 // Registers user
-router.post("/register", async function (req, res) {
+router.post("/register", async function (req, res, next) {
   try {
     const { name, surname, email, password } = req.body;
     const newPerson = new Person({
@@ -48,15 +63,26 @@ router.post("/register", async function (req, res) {
       password: password,
     });
     await newPerson.save();
-    res.json("You have given birth to a new person.");
+    res.status(201).json({message: "You have given birth to a new person."});
   } catch (err) {
     console.error(err);
-    res.json("Just wasn't meant to be...");
+    next(err)
   }
 });
 
 // Assign teams
-router.patch("/assignTeams", function (req, res) {
-
+router.patch("/assignTeams", async function (req, res, next) {
+  try{
+    await connect()
+    var {email, teams} = req.body
+    var person = await Person.findOne({email: email})
+    if(!person){
+      return res.status(404).json({error: "Looks like this one was miscarried..."});
+    }
+    person.teams = teams
+  }catch(err){
+    console.log(err)
+    next(err)
+  }
 });
 module.exports = router;
