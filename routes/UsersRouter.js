@@ -1,4 +1,5 @@
 var express = require('express');
+const Person = require('../models/person');
 var router = express.Router();
 
 // Base route: /users
@@ -6,6 +7,7 @@ var router = express.Router();
 // Get all users
 router.get('/', async function (req, res) {
     try {
+        await connect()
         await Person.find();
         res.json({message: "Success"});
       } catch (err) {
@@ -15,8 +17,19 @@ router.get('/', async function (req, res) {
 })
 
 // Get user details
-router.get('/:userEmail', function (req, res) {
-
+router.get('/:userEmail', async function (req, res) {
+    try{
+        await connect()
+        var email = req.params.email
+        var person = await Person.findOne({email: email})
+        if(!person){
+            return res.json("Looks like this one was miscarried...")
+        }
+        res.json("Gottem!")
+    }catch(err){
+        console.log(err)
+        res.json("I think they're playing hide and seek...")
+    }
 })
 
 // Check credentials
