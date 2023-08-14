@@ -20,7 +20,8 @@ app.use("/", mainRouter);
 app.use("/users", usersRouter);
 app.use("/teams", teamsRouter);
 
-app.use(function (err, req, res, next) {
+app.use(function (err, req, res, next)
+{
   res.locals.message = err.message;
   res.locals.error = req.app.get("env") === "development" ? err : {};
 
@@ -32,12 +33,14 @@ app.use(function (err, req, res, next) {
 // schedulers update results at certain times after matches
 var times = ["0 10 15 * * *", "0 45 17 * * *", "0 0 20 * * *", "0 15 23 * * *"];
 var schedulers = [];
-times.forEach(function (time) {
+times.forEach(function (time)
+{
   schedulers.push(
-    cron.schedule(time, function () {
+    cron.schedule(time, function ()
+    {
       updateMatches()
-        .then(function (result) {})
-        .catch(function (err) {});
+        .then(function (result) { })
+        .catch(function (err) { });
     })
   );
 });
