@@ -33,7 +33,9 @@ router.get("/:userEmail", async function (req, res) {
 });
 
 // Check credentials
-router.post("/checkCred", function (req, res) {});
+router.post("/checkCred", function (req, res) {
+  
+});
 
 // Registers user
 router.post("/register", async function (req, res) {
@@ -54,5 +56,7 @@ router.post("/register", async function (req, res) {
 });
 
 // Assign teams
-router.patch("/assignTeams", function (req, res) {});
+router.patch("/assignTeams", function (req, res) {
+
+});
 module.exports = router;
