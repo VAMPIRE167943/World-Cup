@@ -10,9 +10,8 @@ async function connect() {
 }
 
 async function updateMatches() {
-   new Promise()
-   .then(function () {
-      updateFront()
-   })
+  new Promise().then(function () {
+    updateFront();
+  });
 }
 module.exports = { connect, updateMatches };
