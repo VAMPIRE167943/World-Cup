@@ -18,3 +18,25 @@ Check credentials | This checks entered credentials when logging in | /users/che
 Register user | This registers user to database | /users/register (POST)
 Assign teams | This saves assigned teams to database for a specific user | /users/assignTeams(PATCH)
 
+### Match update Scheduler
+
+The scheduler uses CRON to update match results approximately after a match ends. <br>
+Update times: **3:10 pm**, **5:45 pm**, **8:00 pm**, **11:15 pm**
+
+```javascript
+var times = ['0 10 15 * * *', '0 45 17 * * *', '0 0 20 * * *', '0 15 23 * * *']
+var schedulers = []
+times.forEach(function (time) {
+   schedulers.push(cron.schedule(time, function () {
+      updateMatches()
+      .then(function (result) {
+         // to be added
+      })
+      .catch(function (err) {
+         // To be added
+      })
+   }))
+})
+```
+Times are set in an array of CRON strings.
+A `forEach` is used to create schedulers and is stored in another array. When a specified time is reached. The API is called and its results are stored to the database.
