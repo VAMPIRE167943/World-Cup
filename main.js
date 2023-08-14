@@ -3,6 +3,8 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
 var mainRouter = require('./routes/MainRouter')
+var usersRouter = require('./routes/UsersRouter')
+var teamsRouter = require('./routes/TeamsRouter')
 
 var app = express();
 
@@ -12,6 +14,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 app.use('/', mainRouter);
+app.use('/users', usersRouter)
+app.use('/teams', teamsRouter)
 
 app.use(function(err, req, res, next) {
    res.locals.message = err.message;
