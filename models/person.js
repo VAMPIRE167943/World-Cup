@@ -1,13 +1,13 @@
-var mongoose = require('mongoose');
+var mongoose = require("mongoose");
 
 var human = new mongoose.Schema({
   name: String,
   surname: String,
   email: String,
   password: String,
-  teams: Array
+  teams: Array,
 });
 
-const person = mongoose.model('person', human);
+const Person = mongoose.model("Person", human);
 
-module.exports = person;
+module.exports = Person;
