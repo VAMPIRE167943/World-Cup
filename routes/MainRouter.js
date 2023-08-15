@@ -3,8 +3,7 @@ var router = express.Router();
 
 router.get('/', function (req, res, next)
 {
-  console.log("it works")
-  res.send("Wc-back")
+  res.send("No no you don't belong here, shoo shoo")
 });
 
 module.exports = router;

@@ -4,6 +4,7 @@ var logger = require("morgan");
 var cron = require("node-cron");
 var { connect, updateMatches } = require("./mongo.js");
 var { Person } = require("./models/person.js");
+var cors = require("cors")
 
 var mainRouter = require("./routes/MainRouter");
 var usersRouter = require("./routes/UsersRouter");
@@ -11,6 +12,7 @@ var teamsRouter = require("./routes/TeamsRouter");
 
 var app = express();
 
+app.use(cors())
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
