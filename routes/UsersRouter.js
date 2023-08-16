@@ -1,6 +1,6 @@
 var express = require("express");
-const Person = require("../models/person");
-const { connect } = require("../mongo.js");
+var Person = require("../models/person");
+var { connect } = require("../mongo.js");
 var router = express.Router();
 
 // Base route: /users
@@ -73,8 +73,8 @@ router.post("/register", async function (req, res, next)
 {
   try
   {
-    const { name, surname, email, password } = req.body;
-    const newPerson = new Person({
+    var { name, surname, email, password } = req.body;
+    var newPerson = new Person({
       name: name,
       surname: surname,
       email: email,
