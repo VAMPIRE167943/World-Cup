@@ -97,7 +97,7 @@ router.patch("/assignTeams", async function (req, res, next)
   {
     var { email, teams } = req.body;
     var birb = await connect();
-    var person = await birb.collection("people").findOne({ email: email });
+    var person = await birb.collection("people").findOneAndUpdate({ email: email });
     if (!person)
     {
       return res
