@@ -1,6 +1,6 @@
 var express = require("express");
 const Person = require("../models/person");
-const { connect } = require("http2");
+const { connect } = require("../mongo.js");
 var router = express.Router();
 
 // Base route: /users
