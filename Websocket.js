@@ -1,9 +1,10 @@
 
 
 
-function updateFront() {
+function updateFront()
+{
 
 }
 
 
-module.exports = {updateFront}
+module.exports = { updateFront }
