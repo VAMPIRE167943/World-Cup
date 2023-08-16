@@ -1,7 +1,9 @@
 var express = require('express');
 var router = express.Router();
 var { connect } = require("../mongo.js")
-var Team = require("../models/teams.js")
+var Team = require("../models/teams.js");
+const APITools = require('../APImodule.js');
+
 
 // Base route: /teams
 
@@ -58,8 +60,9 @@ router.get('/matches/:teamName', async function (req, res, next)
 {
     try
     {
-        await connect()
-
+        //await connect()
+      await APITools.getFixtures(460)
+      res.status(200).json({yes: "yes"})
     } catch (err)
     {
         console.log(err)
