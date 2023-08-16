@@ -60,7 +60,7 @@ router.post("/checkCred", async function (req, res, next)
     {
       return res.status(404).json({ message: "Stranger danger!" });
     }
-    res.status(200).json({ message: "Ah yes, welcome back" });
+    res.status(200).json({ message: "Ah yes, welcome back", email: email });
   } catch (err)
   {
     console.log(err);
