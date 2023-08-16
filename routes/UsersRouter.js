@@ -73,7 +73,6 @@ router.post("/register", async function (req, res, next)
 {
   try
   {
-    await connect()
     const { name, surname, email, password } = req.body;
     const newPerson = new Person({
       name: name,
@@ -81,7 +80,8 @@ router.post("/register", async function (req, res, next)
       email: email,
       password: password,
     });
-    await newPerson.save();
+    var birb = await connect()
+    await birb.collection("people").insertOne(newPerson)
     res.status(201).json({ message: "You have given birth to a new person." });
   } catch (err)
   {

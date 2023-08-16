@@ -1,9 +1,9 @@
-const { MongoClient } = require("mongodb");
-const { updateFront } = require("./Websocket");
+var { MongoClient } = require("mongodb");
+var { updateFront } = require("./Websocket");
 
 async function connect()
 {
-  const client = await MongoClient.connect("mongodb://127.0.0.1:27017/mongooseBase", {
+  var client = await MongoClient.connect("mongodb://127.0.0.1:27017/mongooseBase", {
     useUnifiedTopology: true,
     monitorCommands: true,
   });
