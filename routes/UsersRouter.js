@@ -10,8 +10,8 @@ router.get("/", async function (req, res, next)
 {
   try
   {
-    await connect();
-    await Person.find();
+    var birb = await connect();
+    await birb.collection("people").find();
     res.status(200).json({ message: "Gotteeeeem" });
   } catch (err)
   {
@@ -25,9 +25,9 @@ router.get("/:userEmail", async function (req, res, next)
 {
   try
   {
-    await connect();
     var email = req.params.email;
-    var person = await Person.findOne({ email: email });
+    var birb = await connect();
+    var person = await birb.collection("people").findOne({ email: email });
     if (!person)
     {
       return res
@@ -47,9 +47,9 @@ router.post("/checkCred", async function (req, res, next)
 {
   try
   {
-    await connect()
     var { email, password } = req.body;
-    var person = await Person.findOne({ email: email });
+    var birb = await connect()
+    var person = await birb.collection("people").findOne({ email: email });
     if (!person)
     {
       return res
@@ -95,9 +95,9 @@ router.patch("/assignTeams", async function (req, res, next)
 {
   try
   {
-    await connect();
     var { email, teams } = req.body;
-    var person = await Person.findOne({ email: email });
+    var birb = await connect();
+    var person = await birb.collection("people").findOne({ email: email });
     if (!person)
     {
       return res
