@@ -24,7 +24,7 @@ times.forEach(function (time)
         }
       })
       .catch(function (err){
-         consol.log(err)
+         console.log(err)
       })
     })
   );
