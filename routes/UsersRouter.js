@@ -97,18 +97,41 @@ router.patch("/assignTeams", async function (req, res, next)
   {
     var { email, teams } = req.body;
     var birb = await connect();
-    var person = await birb.collection("people").findOneAndUpdate({ email: email });
+    var person = await birb.collection("people").findOneAndUpdate({email: email}, { $set: { teams: teams }});
     if (!person)
     {
       return res
         .status(404)
         .json({ error: "Looks like this one was miscarried..." });
     }
-    person.teams = teams;
+    res.status(200).json({message: "Hope you were lucky"})
   } catch (err)
   {
     console.log(err);
     next(err);
   }
 });
+
+router.post("/checkTeams", async function(req, res, next){
+  try{
+    var { email } = req.body;
+    var birb = await connect()
+    var person = await birb.collection("people").findOne({ email: email });
+    if (!person)
+    {
+      return res
+        .status(404)
+        .json({ message: "Probably playing hide and seek again..." });
+    }
+    if (person.teams.length === 0)
+    {
+      return res.status(404).json({ message: "No teams? Gonna cry? 🥲" });
+    }
+    res.status(200).json({ message: "GGs", email: email });
+  }catch(err){
+    console.log(err);
+    next(err);
+  }
+})
+
 module.exports = router;
