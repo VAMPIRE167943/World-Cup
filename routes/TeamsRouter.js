@@ -13,9 +13,15 @@ times.forEach(function (time)
   schedulers.push(
     cron.schedule(time, function ()
     {
-      const matches = APITools.getAllFixtures()
-      .then(function (result) {
-         
+      var matches = APITools.getAllFixtures()
+      .then(async function (res) {
+        try{
+            var birb = await connect()
+            await birb.collection("matches").insertMany(res)
+            console.log("RESPECT++")
+        }catch(err){
+            console.log(err)
+        }
       })
       .catch(function (err){
          consol.log(err)
