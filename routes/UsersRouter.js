@@ -127,7 +127,7 @@ router.post("/checkTeams", async function(req, res, next){
     {
       return res.status(404).json({ message: "No teams? Gonna cry? 🥲" });
     }
-    res.status(200).json({ message: "GGs", email: email });
+    res.status(200).json({ hasTeams: true, email: email });
   }catch(err){
     console.log(err);
     next(err);

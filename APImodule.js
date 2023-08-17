@@ -1,5 +1,7 @@
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
+var moment = require('moment')
+
 var myHeaders = new Headers();
 myHeaders.append("x-rapidapi-key", "bf7371dddab41bef8854e3a86e5f55c6");
 myHeaders.append("x-rapidapi-host", "v1.rugby.api-sports.io");
@@ -14,7 +16,36 @@ var requestOptions = {
 };
 
 var APITools = {
-   getFixtures: async function (country_id)
+   getAllFixtures: async function ()
+   {
+      var matches = [singleTeamMatches.prototype]
+      try
+      {
+         (await fetch(`https://v1.rugby.api-sports.io/games?league=${leagueNum}&season=${seasonNum}`, requestOptions)).json()
+            .then(res =>
+            {
+               matches = []
+               res.response.forEach(element =>
+               {
+                  if (moment(element.date).isAfter("2023-09-06"))
+                  {
+                     matches.push(new singleTeamMatches(element))
+                  }
+               });
+
+               console.log(matches)
+               return matches
+            })
+            .catch(err =>
+            {
+               console.err(err)
+            })
+      } catch (error)
+      {
+         console.log(error)
+      }
+   },
+   getFixturesbyCountry: async function (country_id)
    {
       var matches = [singleTeamMatches.prototype]
       try
@@ -23,7 +54,8 @@ var APITools = {
             .then(res =>
             {
                matches = []
-               res.response.forEach(element => {
+               res.response.forEach(element =>
+               {
                   matches.push(new singleTeamMatches(element))
                });
 

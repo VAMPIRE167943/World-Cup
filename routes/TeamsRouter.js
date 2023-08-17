@@ -3,6 +3,26 @@ var router = express.Router();
 var { connect } = require("../mongo.js")
 var Team = require("../models/teams.js");
 const APITools = require('../APImodule.js');
+var cron = require("node-cron");
+
+// schedulers update results at certain times after matches
+var times = ["0 10 15 * * *", "0 45 17 * * *", "0 0 20 * * *", "0 15 23 * * *"];
+var schedulers = [];
+times.forEach(function (time)
+{
+  schedulers.push(
+    cron.schedule(time, function ()
+    {
+      const matches = APITools.getAllFixtures()
+      .then(function (result) {
+         
+      })
+      .catch(function (err){
+         consol.log(err)
+      })
+    })
+  );
+});
 
 
 // Base route: /teams
@@ -61,7 +81,8 @@ router.get('/matches/:teamName', async function (req, res, next)
     try
     {
         //await connect()
-      await APITools.getFixtures(460)
+      //await APITools.getFixtures(460)
+      await APITools.getAllFixtures()
       res.status(200).json({yes: "yes"})
     } catch (err)
     {
