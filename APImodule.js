@@ -19,64 +19,26 @@ var APITools = {
    getAllFixtures: async function ()
    {
       var matches = [singleTeamMatches.prototype]
-      try
-      {
-         (await fetch(`https://v1.rugby.api-sports.io/games?league=${leagueNum}&season=${seasonNum}`, requestOptions)).json()
-            .then(res =>
-            {
-               matches = []
-               res.response.forEach(element =>
-               {
-                  if (moment(element.date).isAfter("2023-09-06"))
-                  {
-                     matches.push(new singleTeamMatches(element))
-                  }
-               });
 
-               console.log(matches)
-               return matches
-            })
-            .catch(err =>
-            {
-               console.err(err)
-            })
-      } catch (error)
+      const response = (await fetch(`https://v1.rugby.api-sports.io/games?league=${leagueNum}&season=${seasonNum}`, requestOptions)).json()
+      const results = await response
+      matches = []
+      results.response.forEach(element =>
       {
-         console.log(error)
-      }
+         if (moment(element.date).isAfter("2023-09-06"))
+         {
+            matches.push(new singleTeamMatches(element))
+         }
+      });
+      return matches
    },
-   getFixturesbyCountry: async function (country_id)
-   {
-      var matches = [singleTeamMatches.prototype]
-      try
-      {
-         (await fetch(`https://v1.rugby.api-sports.io/games?league=${leagueNum}&season=${seasonNum}&team=${country_id}`, requestOptions)).json()
-            .then(res =>
-            {
-               matches = []
-               res.response.forEach(element =>
-               {
-                  matches.push(new singleTeamMatches(element))
-               });
-
-               console.log(matches[0].date)
-            })
-            .catch(err =>
-            {
-               console.err(err)
-            })
-      } catch (error)
-      {
-         console.log(error)
-      }
-
-   }
 }
 
 class singleTeamMatches
 {
    constructor(result)
    {
+      this._id = result.id
       this.date = result.date
       this.time = result.time
       this.status = result.status.short
@@ -96,27 +58,3 @@ class singleTeamMatches
 }
 
 module.exports = APITools
-
-
-// try
-//       {
-//          axios({
-//             method: 'get',
-//             url: `https://v1.rugby.api-sports.io/games?league=${leagueNum}&season=${seasonNum}&team=${country_id}`,
-//             httpsAgent: new https.Agent({
-//                cert: cert
-//             }),
-//             headers: myHeaders,
-//          })
-//             .then(res =>
-//             {
-//                console.log(res.data)
-//             })
-//             .catch(err =>
-//             {
-//                console.error(err)
-//             })
-//       } catch (error)
-//       {
-//          console.error(error)
-//       }

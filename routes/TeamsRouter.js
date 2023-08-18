@@ -17,14 +17,23 @@ times.forEach(function (time)
       .then(async function (res) {
         try{
             var birb = await connect()
-            await birb.collection("matches").insertMany(res)
+            const count = await birb.collection("matches").countDocuments({})
+            if(count > 0){
+               await birb.collection("matches").deleteMany({})
+               await birb.collection("matches").insertMany(res)
+               console.log("surprise motherfucker")
+             }else {
+                console.log("I dont exist, what is life")
+                await birb.collection("matches").insertMany(res)
+             }
+
             console.log("RESPECT++")
         }catch(err){
             console.log(err)
         }
       })
       .catch(function (err){
-         consol.log(err)
+         console.log(err)
       })
     })
   );
@@ -82,19 +91,19 @@ router.get('/:teamName', async function (req, res, next)
 })
 
 // get matches by team
-router.get('/matches/:teamName', async function (req, res, next)
+router.get('/matches/:teamID', async function (req, res, next)
 {
-    try
-    {
-        //await connect()
-      //await APITools.getFixtures(460)
-      await APITools.getAllFixtures()
-      res.status(200).json({yes: "yes"})
-    } catch (err)
-    {
-        console.log(err)
-        next(err)
-    }
+   const specifiedTeam = Number(req.params.teamID)
+   var birb = await connect()
+   const result = (await birb.collection("matches").find({$or: [{ 'teams.home.id': specifiedTeam }, {'teams.away.id': specifiedTeam}] })).toArray()
+   .then(function (docs) {
+      res.status(200).json(docs)
+   })
+
+   // const result = (await birb.collection("matches").find()).toArray()
+   // .then(function (docs) {
+   //    res.status(200).json(docs)
+   // })
 })
 
 

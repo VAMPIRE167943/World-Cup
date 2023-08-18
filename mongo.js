@@ -1,5 +1,4 @@
 var { MongoClient } = require("mongodb");
-var { updateFront } = require("./Websocket");
 const APITools = require("./APImodule");
 
 async function connect()
@@ -11,4 +10,4 @@ async function connect()
   return client.db("mongooseBase");
 }
 
-module.exports = { connect, updateMatches };
+module.exports = { connect };

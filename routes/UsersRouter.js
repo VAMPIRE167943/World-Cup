@@ -23,6 +23,7 @@ router.get("/", async function (req, res, next)
 // Get user details
 router.get("/:userEmail", async function (req, res, next)
 {
+   console.log(req.params.userEmail);
   try
   {
     var email = req.params.email;
