@@ -2,6 +2,7 @@ var express = require("express");
 var Person = require("../models/person");
 var { connect } = require("../mongo.js");
 var router = express.Router();
+var encrypt = require("bcrypt");
 
 // Base route: /users
 
@@ -131,6 +132,41 @@ router.post("/checkTeams", async function(req, res, next){
   }catch(err){
     console.log(err);
     next(err);
+  }
+})
+
+router.patch("/rebirth/password", async function(req, res, next){
+  try{
+    var { email, newPassword  } = req.body;
+    var birb = connect()
+    var hash = await encrypt.hash(newPassword, 10)
+    var person = await birb.collection("people").findOneAndUpdate({email: email}, { $set: { password: hash  }});
+    if (!person)
+    {
+      return res
+        .status(404)
+        .json({ error: "Looks like this one was miscarried..." });
+    }
+    res.status(200).json({message: "Ascended"})
+  }catch(err){
+    console.log(err)
+  }
+})
+
+router.patch("/rebirth/email", async function(req, res, next){
+  try{
+    var { email, newEmail } = req.body;
+    var birb = connect()
+    var person = await birb.collection("people").findOneAndUpdate({email: email}, { $set: { email: newEmail }});
+    if (!person)
+    {
+      return res
+        .status(404)
+        .json({ error: "Looks like this one was miscarried..." });
+    }
+    res.status(200).json({message: "Ascended"})
+  }catch(err){
+    console.log(err)
   }
 })
 
