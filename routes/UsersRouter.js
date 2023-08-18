@@ -24,10 +24,9 @@ router.get("/", async function (req, res, next)
 // Get user details
 router.get("/:userEmail", async function (req, res, next)
 {
-   console.log(req.params.userEmail);
   try
   {
-    var email = req.params.email;
+    var email = req.params.userEmail;
     var birb = await connect();
     var person = await birb.collection("people").findOne({ email: email });
     if (!person)
