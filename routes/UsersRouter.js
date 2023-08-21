@@ -14,8 +14,10 @@ router.get("/", async function (req, res, next)
     var birb = await connect();
     var organisms = await birb.collection("people").find().toArray()
     var names = organisms.map(organism => organism.name)
-    var teams = organisms.map(organism => organism.teams || [])
-    res.status(200).json({ message: "Gotteeeeem", names: names, teams: teams });
+    var teams = organisms.map((organism) =>
+      organism.teams.map((team) => team.name)
+    )
+    res.status(200).json({ message: "Gotteeeeem", names: names, teams: teams })
   } catch (err)
   {
     console.error(err);
