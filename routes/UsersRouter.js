@@ -55,8 +55,9 @@ router.post("/checkCred", async function (req, res, next)
     {
       return res
         .status(404)
-        .json({ message: "Probably playing hide and seek again..." });
+        .json({ error: "Probably playing hide and seek again..." });
     }
+    // var samesame = await encrypt.compare(password, person.password)
     if (person.password !== password)
     {
       return res.status(404).json({ message: "Stranger danger!" });
@@ -80,7 +81,7 @@ router.post("/register", async function (req, res, next)
       name: name,
       surname: surname,
       email: email,
-      password: hash,
+      password: password,
     });
     var birb = await connect()
     await birb.collection("people").insertOne(newPerson)
@@ -142,7 +143,7 @@ router.patch("/:userEmail/password", async function(req, res, next){
     var { newPassword  } = req.body;
     var birb = await connect()
     var hash = await encrypt.hash(newPassword, 10)
-    var person = await birb.collection("people").findOneAndUpdate({email: email}, { $set: { password: hash  }});
+    var person = await birb.collection("people").findOneAndUpdate({email: email}, { $set: { password: newPassword  }});
     if (!person)
     {
       return res
