@@ -135,9 +135,10 @@ router.post("/checkTeams", async function(req, res, next){
   }
 })
 
-router.patch("/rebirth/password", async function(req, res, next){
+router.patch("/:userEmail/password", async function(req, res, next){
   try{
-    var { email, newPassword  } = req.body;
+    var email = req.params.userEmail
+    var { newPassword  } = req.body;
     var birb = connect()
     var hash = await encrypt.hash(newPassword, 10)
     var person = await birb.collection("people").findOneAndUpdate({email: email}, { $set: { password: hash  }});
@@ -153,9 +154,10 @@ router.patch("/rebirth/password", async function(req, res, next){
   }
 })
 
-router.patch("/rebirth/email", async function(req, res, next){
+router.patch("/:userEmail/email", async function(req, res, next){
   try{
-    var { email, newEmail } = req.body;
+    var email = req.params.userEmail;
+    var { newEmail } = req.body;
     var birb = connect()
     var person = await birb.collection("people").findOneAndUpdate({email: email}, { $set: { email: newEmail }});
     if (!person)
