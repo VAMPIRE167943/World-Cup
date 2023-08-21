@@ -139,7 +139,7 @@ router.patch("/:userEmail/password", async function(req, res, next){
   try{
     var email = req.params.userEmail
     var { newPassword  } = req.body;
-    var birb = connect()
+    var birb = await connect()
     var hash = await encrypt.hash(newPassword, 10)
     var person = await birb.collection("people").findOneAndUpdate({email: email}, { $set: { password: hash  }});
     if (!person)
@@ -158,7 +158,7 @@ router.patch("/:userEmail/email", async function(req, res, next){
   try{
     var email = req.params.userEmail;
     var { newEmail } = req.body;
-    var birb = connect()
+    var birb = await connect()
     var person = await birb.collection("people").findOneAndUpdate({email: email}, { $set: { email: newEmail }});
     if (!person)
     {
