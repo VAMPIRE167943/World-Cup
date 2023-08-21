@@ -75,11 +75,12 @@ router.post("/register", async function (req, res, next)
   try
   {
     var { name, surname, email, password } = req.body;
+    var hash = await encrypt.hash(password, 10)
     var newPerson = new Person({
       name: name,
       surname: surname,
       email: email,
-      password: password,
+      password: hash,
     });
     var birb = await connect()
     await birb.collection("people").insertOne(newPerson)
@@ -148,7 +149,7 @@ router.patch("/:userEmail/password", async function(req, res, next){
         .status(404)
         .json({ error: "Looks like this one was miscarried..." });
     }
-    res.status(200).json({message: "Ascended"})
+    res.status(200).json({message: "You have ascended"})
   }catch(err){
     console.log(err)
   }
@@ -166,7 +167,7 @@ router.patch("/:userEmail/email", async function(req, res, next){
         .status(404)
         .json({ error: "Looks like this one was miscarried..." });
     }
-    res.status(200).json({message: "Ascended"})
+    res.status(200).json({message: "You have ascended"})
   }catch(err){
     console.log(err)
   }
