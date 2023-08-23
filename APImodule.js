@@ -46,15 +46,64 @@ class singleTeamMatches
          home: {
             id: result.teams.home.id,
             name: result.teams.home.name,
-            score: result.scores.home
+            score: result.scores.home,
+            pts: 0
          },
          away: {
             id: result.teams.away.id,
             name: result.teams.away.name,
-            score: result.scores.away
+            score: result.scores.away,
+            pts: 0
+         },
+
+      }
+      this.calcPoints()
+   }
+   isFixture(status)
+   {
+      switch (status)
+      {
+         case "NS" || "POST":
+            return true;
+            break
+         case "1H" || "2H" || "HT" || "ET" || "BT" || "PT" || "INTR" || "AWA" || "AET" || "FT":
+            return false
+            break;
+      }
+   }
+   calcPoints()
+   {
+      if (this.isFixture(this.status) == undefined || this.isFixture(this.status) == false)
+      {
+         var home = 0
+         var away = 0
+         if (this.teams.home.score > this.teams.away.score)
+         {
+            home += 3
+         } else if (this.teams.home.score == this.teams.away.score)
+         {
+            home += 1
+            away += 1
+         } else
+         {
+            away += 3
          }
+
+         if ((this.teams.home.score - this.teams.away.score) > 20)
+         {
+            home += 2
+            away -= 2
+         } else if ((this.teams.away.score - this.teams.home.score) > 20)
+         {
+            away += 2
+            home -= 2
+         }
+         this.teams.home.pts = home
+         this.teams.away.pts = away
       }
    }
 }
+
+
 
 module.exports = APITools
