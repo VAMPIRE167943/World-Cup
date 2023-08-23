@@ -52,7 +52,7 @@ function matches()
                console.log("surprise motherfucker")
             } else
             {
-               console.log("Why are we still here, just to suffer")
+               console.log("Why are we still here? Just to suffer? Every night, I can feel my leg... And my arm... even my fingers... The body I've lost... the comrades I've lost... won't stop hurting... It's like they're all still there. You feel it, too, don't you? I'm gonna make them give back our past!")
                await birb.collection("matches").insertMany(res)
             }
 
@@ -97,7 +97,7 @@ function matches()
                   }
 
                })
-               await birb.collection("people").findOneAndUpdate({email: details.email}, {$set: {pts: pts}} )
+               await birb.collection("people").findOneAndUpdate({ email: details.email }, { $set: { pts: pts } })
             })
 
             console.log("RESPECT++")
@@ -110,6 +110,7 @@ function matches()
       {
          console.log(err)
       })
+
 }
 
 matches()
