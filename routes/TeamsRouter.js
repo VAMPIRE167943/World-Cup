@@ -61,11 +61,12 @@ router.get('/matches/:teamID', async function (req, res, next)
 {
    const specifiedTeam = Number(req.params.teamID)
    var birb = await connect()
+   var totalPts = (await birb.collection("teams").findOne({_id: specifiedTeam})).pts
    const result = (await birb.collection("matches").find({ $or: [{ 'teams.home.id': specifiedTeam }, { 'teams.away.id': specifiedTeam }] })).toArray()
       .then(function (docs)
       {
 
-         res.status(200).json(docs)
+         res.status(200).json({totalPts: totalPts, matches: docs})
       })
 
    // const result = (await birb.collection("matches").find()).toArray()
@@ -74,27 +75,5 @@ router.get('/matches/:teamID', async function (req, res, next)
    // })
 })
 
-function getTeamScore(id, home, away)
-{
-
-   if (home.score > away.score && Number(this.selected) == home.id)
-   {
-      this.totalPoints += 3
-   } else if (home.score == away.score)
-   {
-      this.totalPoints += 1
-   } else if (Number(this.selected) == away.id)
-   {
-      this.totalPoints += 3
-   }
-
-   if ((home.score - away.score && Number(this.selected) == home.id) > 20)
-   {
-      this.totalPoints += 3
-   } else if ((away.score - home.score) > 20 && Number(this.selected) == away.id)
-   {
-      this.totalPoints += 3
-   }
-}
 
 module.exports = router;
