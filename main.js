@@ -30,7 +30,44 @@ app.use(function (err, req, res, next)
   res.send("error");
 });
 
+function matches(){
+  APITools.getAllFixtures()
+  .then(async function (res) {
+    try{
+        var birb = await connect()
+        const count = await birb.collection("matches").countDocuments({})
+        if(count > 0){
+           await birb.collection("matches").deleteMany({})
+           await birb.collection("matches").insertMany(res)
+           console.log("surprise motherfucker")
+         }else {
+            console.log("I dont exist, what is life")
+            await birb.collection("matches").insertMany(res)
+         }
 
+        console.log("RESPECT++")
+    }catch(err){
+        console.log(err)
+    }
+  })
+  .catch(function (err){
+     console.log(err)
+  })
+}
+
+matches()
+
+var times = ["0 10 15 * * *", "0 45 17 * * *", "0 0 20 * * *", "0 15 23 * * *"];
+var schedulers = [];
+times.forEach(function (time)
+{
+  schedulers.push(
+    cron.schedule(time, function ()
+    {
+      matches()
+    })
+  );
+});
 
 app.listen(3000);
 
