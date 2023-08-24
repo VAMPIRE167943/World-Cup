@@ -1,9 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var { connect } = require("../mongo.js")
-var {Team, teams } = require("../models/teams.js");
-const APITools = require('../APImodule.js');
-var cron = require("node-cron");
+var {Team} = require("../models/teams.js");
 
 // Base route: /teams
 
