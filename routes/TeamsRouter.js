@@ -60,18 +60,20 @@ router.get('/matches/:teamID', async function (req, res, next)
    const specifiedTeam = Number(req.params.teamID)
    var birb = await connect()
    var totalPts = (await birb.collection("teams").findOne({_id: specifiedTeam})).pts
-   const result = (await birb.collection("matches").find({ $or: [{ 'teams.home.id': specifiedTeam }, { 'teams.away.id': specifiedTeam }] })).toArray()
-      .then(function (docs)
-      {
-
-         res.status(200).json({totalPts: totalPts, matches: docs})
-      })
-
-   // const result = (await birb.collection("matches").find()).toArray()
-   // .then(function (docs) {
-   //    res.status(200).json(docs)
-   // })
+   (await birb.collection("matches").find({ $or: [{ 'teams.home.id': specifiedTeam }, { 'teams.away.id': specifiedTeam }] })).toArray()
+   .then(function (docs)
+   {
+      res.status(200).json({totalPts: totalPts, matches: docs})
+   })
 })
 
+// get and update scores manually
+router.patch('/:matchID/scores', async function(req, res, next){
+   var id = req.params.matchID
+   var { homescore, awayscore } = req.body
+   var birb = await connect()
+   await birb.collection("matches").findOneAndUpdate({_id: id}, {$set: {"teams.home.score": homescore, "teams.away.score": awayscore}})
+   res.status(200).json({message: "Admin go brrrrrrrrrrrrrrr"})
+})
 
 module.exports = router;
