@@ -106,4 +106,4 @@ class singleTeamMatches
 
 
 
-module.exports = APITools
+module.exports = {APITools, singleTeamMatches}

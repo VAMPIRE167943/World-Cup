@@ -3,7 +3,7 @@ var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 var { Person } = require("./models/person.js");
 var cors = require("cors")
-var APITools = require("./APImodule.js")
+var {APITools} = require("./APImodule.js")
 var cron = require("node-cron")
 var { connect } = require("./mongo.js")
 var teams = require("./models/teams.js");
@@ -120,29 +120,5 @@ times.forEach(function (time)
 });
 
 app.listen(3000);
-
-function getTeamScore(id, home, away)
-{
-  var totalPoints = 0
-  if (home.score > away.score && id == home.id)
-  {
-    totalPoints += 3
-  } else if (home.score == away.score)
-  {
-    totalPoints += 1
-  } else if (id == away.id)
-  {
-    totalPoints += 3
-  }
-
-  if ((home.score - away.score && id == home.id) > 20)
-  {
-    totalPoints += 3
-  } else if ((away.score - home.score) > 20 && id == away.id)
-  {
-    totalPoints += 3
-  }
-  return totalPoints
-}
 
 module.exports = app;
