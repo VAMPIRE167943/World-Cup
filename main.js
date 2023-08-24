@@ -26,91 +26,83 @@ app.use("/teams", teamsRouter);
 
 app.use(function (err, req, res, next)
 {
-   res.locals.message = err.message;
-   res.locals.error = req.app.get("env") === "development" ? err : {};
-
-   // render the error page
-   res.status(err.status || 500);
-   res.send("error");
+  res.locals.message = err.message;
+  res.locals.error = req.app.get("env") === "development" ? err : {};
+  // render the error page
+  res.status(err.status || 500);
+  res.send("error");
 });
 
 function matches()
 {
-   APITools.getAllFixtures()
-      .then(async function (res)
+  APITools.getAllFixtures()
+    .then(async function (res)
+    {
+      var teamList = teams
+      try
       {
-         var teamList = teams
-         try
-         {
-            var birb = await connect()
-
-            const matchcount = await birb.collection("matches").countDocuments({})
-            if (matchcount > 0)
+        var birb = await connect()
+        const matchcount = await birb.collection("matches").countDocuments({})
+        if (matchcount > 0)
+        {
+          await birb.collection("matches").deleteMany({})
+          await birb.collection("matches").insertMany(res)
+          console.log("surprise motherfucker")
+        } else
+        {
+          console.log("Why are we still here? Just to suffer? Every night, I can feel my leg... And my arm... even my fingers... The body I've lost... the comrades I've lost... won't stop hurting... It's like they're all still there. You feel it, too, don't you? I'm gonna make them give back our past!")
+          await birb.collection("matches").insertMany(res)
+        }
+        teamList.forEach((team, index, array) =>
+        {
+          var totalPoints = 0
+          res.forEach(match =>
+          {
+            if (match.teams.home.id == team._id)
             {
-               await birb.collection("matches").deleteMany({})
-               await birb.collection("matches").insertMany(res)
-               console.log("surprise motherfucker")
-            } else
+              totalPoints += match.teams.home.pts
+            } else if (match.teams.away.id == team._id)
             {
-               console.log("Why are we still here? Just to suffer? Every night, I can feel my leg... And my arm... even my fingers... The body I've lost... the comrades I've lost... won't stop hurting... It's like they're all still there. You feel it, too, don't you? I'm gonna make them give back our past!")
-               await birb.collection("matches").insertMany(res)
+              totalPoints += match.teams.away.pts
             }
-
-            teamList.forEach((team, index, array) =>
+          })
+          teamList[index]['pts'] = totalPoints
+        })
+        const teamCount = await birb.collection("teams").countDocuments({})
+        if (teamCount < 1)
+        {
+          birb.collection("teams").insertMany(teamList)
+        } else
+        {
+          birb.collection("teams").drop()
+          birb.collection("teams").insertMany(teamList)
+        }
+        var users = await birb.collection("people").find().toArray()
+        users.forEach(async (details) =>
+        {
+          var pts = 0
+          details.teams.forEach((team) =>
+          {
+            try
             {
-               var totalPoints = 0
-               res.forEach(match =>
-               {
-                  if (match.teams.home.id == team._id)
-                  {
-                     totalPoints += match.teams.home.pts
-                  } else if (match.teams.away.id == team._id)
-                  {
-                     totalPoints += match.teams.away.pts
-                  }
-               })
-               teamList[index]['pts'] = totalPoints
-            })
-            const teamCount = await birb.collection("teams").countDocuments({})
-            if (teamCount < 1)
+              const selectedTeam = birb.collection("teams").findOne({ _id: team.id })
+              pts += selectedTeam.pts
+            } catch (error)
             {
-               birb.collection("teams").insertMany(teamList)
-            } else
-            {
-               birb.collection("teams").drop()
-               birb.collection("teams").insertMany(teamList)
             }
-
-            var users = await birb.collection("people").find().toArray()
-            users.forEach(async (details) =>
-            {
-               var pts = 0
-               details.teams.forEach((team) =>
-               {
-                  try
-                  {
-                     const selectedTeam = birb.collection("teams").findOne({ _id: team.id })
-                     pts += selectedTeam.pts
-                  } catch (error)
-                  {
-
-                  }
-
-               })
-               await birb.collection("people").findOneAndUpdate({ email: details.email }, { $set: { pts: pts } })
-            })
-
-            console.log("RESPECT++")
-         } catch (err)
-         {
-            console.log(err)
-         }
-      })
-      .catch(function (err)
+          })
+          await birb.collection("people").findOneAndUpdate({ email: details.email }, { $set: { pts: pts } })
+        })
+        console.log("RESPECT++")
+      } catch (err)
       {
-         console.log(err)
-      })
-
+        console.log(err)
+      }
+    })
+    .catch(function (err)
+    {
+      console.log(err)
+    })
 }
 
 matches()
@@ -119,38 +111,38 @@ var times = ["0 10 15 * * *", "0 45 17 * * *", "0 0 20 * * *", "0 15 23 * * *"];
 var schedulers = [];
 times.forEach(function (time)
 {
-   schedulers.push(
-      cron.schedule(time, function ()
-      {
-         matches()
-      })
-   );
+  schedulers.push(
+    cron.schedule(time, function ()
+    {
+      matches()
+    })
+  );
 });
 
 app.listen(3000);
 
 function getTeamScore(id, home, away)
 {
-   var totalPoints = 0
-   if (home.score > away.score && id == home.id)
-   {
-      totalPoints += 3
-   } else if (home.score == away.score)
-   {
-      totalPoints += 1
-   } else if (id == away.id)
-   {
-      totalPoints += 3
-   }
+  var totalPoints = 0
+  if (home.score > away.score && id == home.id)
+  {
+    totalPoints += 3
+  } else if (home.score == away.score)
+  {
+    totalPoints += 1
+  } else if (id == away.id)
+  {
+    totalPoints += 3
+  }
 
-   if ((home.score - away.score && id == home.id) > 20)
-   {
-      totalPoints += 3
-   } else if ((away.score - home.score) > 20 && id == away.id)
-   {
-      totalPoints += 3
-   }
-   return totalPoints
+  if ((home.score - away.score && id == home.id) > 20)
+  {
+    totalPoints += 3
+  } else if ((away.score - home.score) > 20 && id == away.id)
+  {
+    totalPoints += 3
+  }
+  return totalPoints
 }
 
 module.exports = app;
