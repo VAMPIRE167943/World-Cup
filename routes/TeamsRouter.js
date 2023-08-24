@@ -14,7 +14,7 @@ router.get('/', async function (req, res, next)
    try
    {
       var birb = await connect()
-      var teams = await (await birb.collection("teams").find()).toArray()
+      var teams = await birb.collection("teams").find().toArray()
       res.status(200).json({ teams: teams })
    } catch (err)
    {
