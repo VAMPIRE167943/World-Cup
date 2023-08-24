@@ -35,24 +35,24 @@ router.get('/shortlist', async function (req, res, next)
 })
 
 // Get a specified team info
-router.get('/:teamName', async function (req, res, next)
-{
-   try
-   {
-      await connect()
-      var team_name = req.params.team_name
-      var team = await Team.findOne({ team_name: team_name })
-      if (!team)
-      {
-         return res.status(404).json({ error: "You sure they even exist? Cause not found..." })
-      }
-      res.status(200).json({ data: team, message: "Gottem!" })
-   } catch (err)
-   {
-      console.log(err)
-      next(err)
-   }
-})
+// router.get('/:teamName', async function (req, res, next)
+// {
+//    try
+//    {
+//       await connect()
+//       var team_name = req.params.team_name
+//       var team = await Team.findOne({ team_name: team_name })
+//       if (!team)
+//       {
+//          return res.status(404).json({ error: "You sure they even exist? Cause not found..." })
+//       }
+//       res.status(200).json({ data: team, message: "Gottem!" })
+//    } catch (err)
+//    {
+//       console.log(err)
+//       next(err)
+//    }
+// })
 
 // get matches by team
 router.get('/matches/:teamID', async function (req, res, next)
@@ -61,11 +61,12 @@ router.get('/matches/:teamID', async function (req, res, next)
    var birb = await connect()
    var totalPts = (await birb.collection("teams").findOne({ _id: specifiedTeam })).pts
    console.log(totalPts)
-      (await birb.collection("matches").find({ $or: [{ 'teams.home.id': specifiedTeam }, { 'teams.away.id': specifiedTeam }] })).toArray()
-      .then(function (docs)
-      {
-         res.status(200).json({ totalPts: totalPts, matches: docs })
-      })
+   const team = (await birb.collection("matches").find({ $or: [{ 'teams.home.id': specifiedTeam }, { 'teams.away.id': specifiedTeam }] })).toArray()
+
+   team.then(function (docs)
+   {
+      res.status(200).json({ totalPts: totalPts, matches: docs })
+   })
 })
 
 // get and update scores manually
@@ -146,18 +147,30 @@ async function recalc()
    var users = await birb.collection("people").find().toArray()
    users.forEach(async (details) =>
    {
-      var pts = 0
+      var newConn = await connect()
+      var selectedTeams = []
+      var selectedIds = []
       details.teams.forEach((team) =>
       {
-         try
-         {
-            const selectedTeam = birb.collection("teams").findOne({ _id: team.id })
-            pts += selectedTeam.pts
-         } catch (error)
-         {
-         }
+         selectedTeams.push(team)
+         selectedIds.push(team.id)
       })
-      await birb.collection("people").findOneAndUpdate({ email: details.email }, { $set: { pts: pts } })
+
+      const allTeams =  await (await newConn.collection("teams").find()).toArray()
+      var pts = 0
+      details.teams.forEach( (team) =>
+      {
+         allTeams.forEach((dbTeam) => {
+            if(dbTeam._id == team.id){
+
+               pts += dbTeam.pts
+            }
+
+         })
+
+      })
+      console.log(pts)
+      await newConn.collection("people").findOneAndUpdate({ email: details.email }, { $set: { pts: pts } })
    })
 }
 
