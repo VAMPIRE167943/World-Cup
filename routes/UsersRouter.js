@@ -12,11 +12,15 @@ router.get("/", async function (req, res, next)
   try
   {
     var birb = await connect();
-    var organisms = await birb.collection("people").find().toArray()
-    var names = organisms.map(organism => organism.name)
-    var teams = organisms.map((organism) =>
-      organism.teams.map((team) => team.name)
-    )
+   //  var organisms = await birb.collection("people").find().sort({pts: -1, "teams." }).toArray()
+   const organisms = await birb.collection("people").aggregate([
+      { $unwind: '$teams' }, // Unwind the 'teams' array
+      { $sort: { pts: -1, 'teams.pts': -1 } }, // Sort by pts and then by first team's pts
+      { $group: { _id: '$_id', document: { $first: '$$ROOT' } } }, // Group back with first sorted document
+      { $replaceRoot: { newRoot: '$document' } } // Replace the root document with sorted result
+    ]).toArray();
+    console.log(organisms)
+    
     res.status(200).json({ message: "Gotteeeeem", names: names, teams: teams })
   } catch (err)
   {

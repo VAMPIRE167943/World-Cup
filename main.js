@@ -91,13 +91,13 @@ function matches()
 
                const allTeams = await (await newConn.collection("teams").find()).toArray()
                var pts = 0
-               details.teams.forEach((team) =>
+               details.teams.forEach((team, index) =>
                {
                   allTeams.forEach((dbTeam) =>
                   {
                      if (dbTeam._id == team.id)
                      {
-
+                        selectedTeams[index]["pts"] = dbTeam.pts
                         pts += dbTeam.pts
                      }
 
@@ -105,7 +105,8 @@ function matches()
 
                })
                console.log(pts)
-               await newConn.collection("people").findOneAndUpdate({ email: details.email }, { $set: { pts: pts } })
+               await newConn.collection("people").findOneAndUpdate({ email: details.email }, { $set: { pts: pts, teams: selectedTeams} })
+
             })
             console.log("RESPECT++")
          } catch (err)
