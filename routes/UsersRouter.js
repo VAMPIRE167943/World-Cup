@@ -137,7 +137,7 @@ router.patch("/assignTeams", async function (req, res, next)
 
       const allTeams = await newConn.collection("teams").find().toArray()
       var pts = 0
-      details.teams.forEach((team, index) =>
+      teams.forEach((team, index) =>
       {
          allTeams.forEach((dbTeam) =>
          {
@@ -151,7 +151,7 @@ router.patch("/assignTeams", async function (req, res, next)
 
       })
       console.log(pts)
-      await newConn.collection("people").findOneAndUpdate({ email: details.email }, { $set: { pts: pts, teams: selectedTeams } })
+      await newConn.collection("people").findOneAndUpdate({ email: email }, { $set: { pts: pts, teams: selectedTeams } })
       if (!person)
       {
          return res
