@@ -12,7 +12,6 @@ router.get("/", async function (req, res, next)
   try
   {
     var birb = await connect();
-   //  var organisms = await birb.collection("people").find().sort({pts: -1, "teams." }).toArray()
    const users = await birb.collection("people").aggregate([
       {
          $sort: {

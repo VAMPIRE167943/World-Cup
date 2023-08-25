@@ -73,11 +73,11 @@ function matches()
             const teamCount = await birb.collection("teams").countDocuments({})
             if (teamCount < 1)
             {
-               birb.collection("teams").insertMany(teamList)
+               await birb.collection("teams").insertMany(teamList)
             } else
             {
-               birb.collection("teams").drop()
-               birb.collection("teams").insertMany(teamList)
+               await birb.collection("teams").drop()
+               await birb.collection("teams").insertMany(teamList)
             }
             var users = await birb.collection("people").find().toArray()
             users.forEach(async (details) =>
@@ -91,7 +91,7 @@ function matches()
                   selectedIds.push(team.id)
                })
 
-               const allTeams = await (await newConn.collection("teams").find()).toArray()
+               const allTeams = await newConn.collection("teams").find().toArray()
                var pts = 0
                details.teams.forEach((team, index) =>
                {
@@ -125,7 +125,7 @@ const apiMatches = matches
 APITools.checkConn()
    .then(async (status) =>
    {
-      APIUp = false
+      APIUp = status
       if (APIUp)
       {
          apiMatches()
@@ -148,7 +148,7 @@ APITools.checkConn()
             const teamCount = await birb.collection("teams").countDocuments({})
             if (teamCount < 1)
             {
-               birb.collection("teams").insertMany(teams)
+               await birb.collection("teams").insertMany(teams)
             }
 
             const matchcount = await birb.collection("matches").countDocuments({})
@@ -173,7 +173,7 @@ APITools.checkConn()
          const teamCount = await birb.collection("teams").countDocuments({})
          if (teamCount < 1)
          {
-            birb.collection("teams").insertMany(teams)
+            await birb.collection("teams").insertMany(teams)
          }
 
          const matchcount = await birb.collection("matches").countDocuments({})

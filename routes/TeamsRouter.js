@@ -21,38 +21,6 @@ router.get('/', async function (req, res, next)
    }
 })
 
-// Get Shortlist
-router.get('/shortlist', async function (req, res, next)
-{
-   try
-   {
-      await connect()
-   } catch (err)
-   {
-      console.log(err)
-      next(err)
-   }
-})
-
-// Get a specified team info
-// router.get('/:teamName', async function (req, res, next)
-// {
-//    try
-//    {
-//       await connect()
-//       var team_name = req.params.team_name
-//       var team = await Team.findOne({ team_name: team_name })
-//       if (!team)
-//       {
-//          return res.status(404).json({ error: "You sure they even exist? Cause not found..." })
-//       }
-//       res.status(200).json({ data: team, message: "Gottem!" })
-//    } catch (err)
-//    {
-//       console.log(err)
-//       next(err)
-//    }
-// })
 
 // get matches by team
 router.get('/matches/:teamID', async function (req, res, next)
@@ -122,7 +90,8 @@ function calcPoints(homeScore, awayScore)
 
 async function recalc()
 {
-   var birb = await connect()
+   try {
+      var birb = await connect()
    var matches = await (await birb.collection('matches').find()).toArray()
    var teamList = await (await birb.collection('teams').find()).toArray()
    teamList.forEach((team, index, array) =>
@@ -141,10 +110,11 @@ async function recalc()
       teamList[index]['pts'] = totalPoints
    })
 
-   birb.collection("teams").drop()
-   birb.collection("teams").insertMany(teamList)
+   await birb.collection("teams").drop()
+   await birb.collection("teams").insertMany(teamList)
 
    var users = await birb.collection("people").find().toArray()
+   const allTeams =  await birb.collection("teams").find().toArray()
    users.forEach(async (details) =>
    {
       var newConn = await connect()
@@ -156,11 +126,12 @@ async function recalc()
          selectedIds.push(team.id)
       })
 
-      const allTeams =  await (await newConn.collection("teams").find()).toArray()
       var pts = 0
       details.teams.forEach( (team, index) =>
       {
+
          allTeams.forEach((dbTeam) => {
+
             if(dbTeam._id == team.id){
                selectedTeams[index]["pts"] = dbTeam.pts
                pts += dbTeam.pts
@@ -172,6 +143,10 @@ async function recalc()
       console.log(pts)
       await newConn.collection("people").findOneAndUpdate({ email: details.email }, { $set: { pts: pts, teams: selectedTeams } })
    })
+   } catch (error) {
+      console.log(error)
+   }
+
 }
 
 module.exports = router;
