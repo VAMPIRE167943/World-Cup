@@ -24,6 +24,8 @@ app.use("/", mainRouter);
 app.use("/users", usersRouter);
 app.use("/teams", teamsRouter);
 
+var APIUp = false
+
 app.use(function (err, req, res, next)
 {
    res.locals.message = err.message;
@@ -105,7 +107,7 @@ function matches()
 
                })
                console.log(pts)
-               await newConn.collection("people").findOneAndUpdate({ email: details.email }, { $set: { pts: pts, teams: selectedTeams} })
+               await newConn.collection("people").findOneAndUpdate({ email: details.email }, { $set: { pts: pts, teams: selectedTeams } })
 
             })
             console.log("RESPECT++")
@@ -119,20 +121,77 @@ function matches()
          console.log(err)
       })
 }
-
-matches()
-
-var times = ["0 10 15 * * *", "0 45 17 * * *", "0 0 20 * * *", "0 15 23 * * *"];
-var schedulers = [];
-times.forEach(function (time)
-{
-   schedulers.push(
-      cron.schedule(time, function ()
+const apiMatches = matches
+APITools.checkConn()
+   .then(async (status) =>
+   {
+      APIUp = status
+      if (APIUp)
       {
-         matches()
-      })
-   );
-});
+         apiMatches()
+         var times = ["0 10 15 * * *", "0 45 17 * * *", "0 0 20 * * *", "0 15 23 * * *"];
+         var schedulers = [];
+         times.forEach(function (time)
+         {
+            schedulers.push(
+               cron.schedule(time, function ()
+               {
+                  apiMatches()
+               })
+            );
+         });
+      } else
+      {
+         try
+         {
+            var birb = await connect()
+            const teamCount = await birb.collection("teams").countDocuments({})
+            if (teamCount < 1)
+            {
+               birb.collection("teams").insertMany(teams)
+            }
+
+            const matchcount = await birb.collection("matches").countDocuments({})
+            if (matchcount < 1)
+            {
+               var matches = await APITools.getAllFixtures()
+               await birb.collection("matches").insertMany(matches)
+            }
+         } catch (error)
+         {
+            console.log(error)
+         }
+
+      }
+   })
+   .catch(async (error) =>
+   {
+      console.log(error)
+      try
+      {
+         var birb = await connect()
+         const teamCount = await birb.collection("teams").countDocuments({})
+         if (teamCount < 1)
+         {
+            birb.collection("teams").insertMany(teams)
+         }
+
+         const matchcount = await birb.collection("matches").countDocuments({})
+         if (matchcount < 1)
+         {
+            var matches = await APITools.getAllFixtures()
+            await birb.collection("matches").insertMany(matches)
+         }
+      } catch (error)
+      {
+         console.log(error)
+      }
+
+   })
+
+
+
+
 
 app.listen(3000);
 

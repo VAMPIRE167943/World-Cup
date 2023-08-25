@@ -16,6 +16,23 @@ var requestOptions = {
 };
 
 var APITools = {
+   checkConn: async function() {
+      try {
+         const res = await (await fetch(`https://v1.rugby.api-sports.io/status`, requestOptions)).json()
+         console.log(res)
+      if (res.response.requests.current >= 0 && res.response.requests.limit_day <= 100){
+         return true
+      } else{
+         console.log("offline")
+         return false
+      }
+      } catch (error) {
+         console.log(error)
+         return false
+      }
+
+
+   },
    getAllFixtures: async function ()
    {
       var matches = [singleTeamMatches.prototype]

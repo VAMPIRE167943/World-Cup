@@ -14,10 +14,12 @@ router.get("/", async function (req, res, next)
     var birb = await connect();
    //  var organisms = await birb.collection("people").find().sort({pts: -1, "teams." }).toArray()
    const users = await birb.collection("people").aggregate([
-      { $unwind: '$teams' }, // Unwind the 'teams' array
-      { $sort: { pts: -1, 'teams.pts': -1 } }, // Sort by pts and then by first team's pts
-      { $group: { _id: '$_id', document: { $first: '$$ROOT' } } }, // Group back with first sorted document
-      { $replaceRoot: { newRoot: '$document' } } // Replace the root document with sorted result
+      {
+         $sort: {
+           pts: -1,
+           "teams.0.pts": -1
+         }
+       }
     ]).toArray();
 
     res.status(200).json({users})
@@ -33,8 +35,23 @@ router.get("/:userEmail", async function (req, res, next)
 {
   try
   {
+      var rank = 0
     var email = req.params.userEmail;
     var birb = await connect();
+    const users = await birb.collection("people").aggregate([
+      {
+         $sort: {
+           pts: -1,
+           "teams.0.pts": -1
+         }
+       }
+    ]).toArray();
+
+    users.forEach((user, index) => {
+      if(user.email == email){
+         rank = index + 1
+      }
+    })
     var person = await birb.collection("people").findOne({ email: email });
     if (!person)
     {
@@ -42,7 +59,7 @@ router.get("/:userEmail", async function (req, res, next)
         .status(404)
         .json({ error: "Looks like this one was miscarried..." });
     }
-    res.status(200).json({ data: person, message: "Gottem!" });
+    res.status(200).json({ data: person, rank , message: "Gottem!" });
   } catch (err)
   {
     console.log(err);
