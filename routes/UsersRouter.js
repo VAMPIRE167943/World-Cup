@@ -9,192 +9,229 @@ var encrypt = require("bcrypt");
 // Get all users
 router.get("/", async function (req, res, next)
 {
-  try
-  {
-    var birb = await connect();
-   const users = await birb.collection("people").aggregate([
-      {
-         $sort: {
-           pts: -1,
-           "teams.0.pts": -1
+   try
+   {
+      var birb = await connect();
+      const users = await birb.collection("people").aggregate([
+         {
+            $sort: {
+               pts: -1,
+               "teams.0.pts": -1
+            }
          }
-       }
-    ]).toArray();
+      ]).toArray();
 
-    res.status(200).json({users})
-  } catch (err)
-  {
-    console.error(err);
-    next(err);
-  }
+      res.status(200).json({ users })
+   } catch (err)
+   {
+      console.error(err);
+      next(err);
+   }
 });
 
 // Get user details
 router.get("/:userEmail", async function (req, res, next)
 {
-  try
-  {
+   try
+   {
       var rank = 0
-    var email = req.params.userEmail;
-    var birb = await connect();
-    const users = await birb.collection("people").aggregate([
-      {
-         $sort: {
-           pts: -1,
-           "teams.0.pts": -1
+      var email = req.params.userEmail;
+      var birb = await connect();
+      const users = await birb.collection("people").aggregate([
+         {
+            $sort: {
+               pts: -1,
+               "teams.0.pts": -1
+            }
          }
-       }
-    ]).toArray();
+      ]).toArray();
 
-    users.forEach((user, index) => {
-      if(user.email == email){
-         rank = index + 1
+      users.forEach((user, index) =>
+      {
+         if (user.email == email)
+         {
+            rank = index + 1
+         }
+      })
+      var person = await birb.collection("people").findOne({ email: email });
+      if (!person)
+      {
+         return res
+            .status(404)
+            .json({ error: "Looks like this one was miscarried..." });
       }
-    })
-    var person = await birb.collection("people").findOne({ email: email });
-    if (!person)
-    {
-      return res
-        .status(404)
-        .json({ error: "Looks like this one was miscarried..." });
-    }
-    res.status(200).json({ data: person, rank , message: "Gottem!" });
-  } catch (err)
-  {
-    console.log(err);
-    next(err);
-  }
+      res.status(200).json({ data: person, rank, message: "Gottem!" });
+   } catch (err)
+   {
+      console.log(err);
+      next(err);
+   }
 });
 
 // Check credentials
 router.post("/checkCred", async function (req, res, next)
 {
-  try
-  {
-    var { email, password } = req.body;
-    var birb = await connect()
-    var person = await birb.collection("people").findOne({ email: email });
-    if (!person)
-    {
-      return res
-        .status(404)
-        .json({ error: "Probably playing hide and seek again..." });
-    }
-    // var samesame = await encrypt.compare(password, person.password)
-    if (person.password !== password)
-    {
-      return res.status(404).json({ message: "Stranger danger!" });
-    }
-    res.status(200).json({ message: "Ah yes, welcome back", email: email });
-  } catch (err)
-  {
-    console.log(err);
-    next(err);
-  }
+   try
+   {
+      var { email, password } = req.body;
+      var birb = await connect()
+      var person = await birb.collection("people").findOne({ email: email });
+      if (!person)
+      {
+         return res
+            .status(404)
+            .json({ error: "Probably playing hide and seek again..." });
+      }
+      // var samesame = await encrypt.compare(password, person.password)
+      if (person.password !== password)
+      {
+         return res.status(404).json({ message: "Stranger danger!" });
+      }
+      res.status(200).json({ message: "Ah yes, welcome back", email: email });
+   } catch (err)
+   {
+      console.log(err);
+      next(err);
+   }
 });
 
 // Registers user
 router.post("/register", async function (req, res, next)
 {
-  try
-  {
-    var { name, surname, email, password } = req.body;
-    var hash = await encrypt.hash(password, 10)
-    var newPerson = new Person({
-      name: name,
-      surname: surname,
-      email: email,
-      password: password,
-    });
-    var birb = await connect()
-    await birb.collection("people").insertOne(newPerson)
-    res.status(201).json({ message: "You have given birth to a new person." });
-  } catch (err)
-  {
-    console.error(err);
-    next(err);
-  }
+   try
+   {
+      var { name, surname, email, password } = req.body;
+      var hash = await encrypt.hash(password, 10)
+      var newPerson = new Person({
+         name: name,
+         surname: surname,
+         email: email,
+         password: password,
+      });
+      var birb = await connect()
+      await birb.collection("people").insertOne(newPerson)
+      res.status(201).json({ message: "You have given birth to a new person." });
+   } catch (err)
+   {
+      console.error(err);
+      next(err);
+   }
 });
 
 // Assign teams
 router.patch("/assignTeams", async function (req, res, next)
 {
-  try
-  {
-    var { email, teams } = req.body;
-    var birb = await connect();
-    var person = await birb.collection("people").findOneAndUpdate({email: email}, { $set: { teams: teams }});
-    if (!person)
-    {
-      return res
-        .status(404)
-        .json({ error: "Looks like this one was miscarried..." });
-    }
-    res.status(200).json({message: "Hope you were lucky"})
-  } catch (err)
-  {
-    console.log(err);
-    next(err);
-  }
+   try
+   {
+      var { email, teams } = req.body;
+      var birb = await connect();
+      var person = await birb.collection("people").findOneAndUpdate({ email: email }, { $set: { teams: teams } });
+      var newConn = await connect()
+      var selectedTeams = []
+      var selectedIds = []
+      teams.forEach((team) =>
+      {
+         selectedTeams.push(team)
+         selectedIds.push(team.id)
+      })
+
+      const allTeams = await newConn.collection("teams").find().toArray()
+      var pts = 0
+      details.teams.forEach((team, index) =>
+      {
+         allTeams.forEach((dbTeam) =>
+         {
+            if (dbTeam._id == team.id)
+            {
+               selectedTeams[index]["pts"] = dbTeam.pts
+               pts += dbTeam.pts
+            }
+
+         })
+
+      })
+      console.log(pts)
+      await newConn.collection("people").findOneAndUpdate({ email: details.email }, { $set: { pts: pts, teams: selectedTeams } })
+      if (!person)
+      {
+         return res
+            .status(404)
+            .json({ error: "Looks like this one was miscarried..." });
+      }
+      res.status(200).json({ message: "Hope you were lucky" })
+   } catch (err)
+   {
+      console.log(err);
+      next(err);
+   }
 });
 
-router.post("/checkTeams", async function(req, res, next){
-  try{
-    var { email } = req.body;
-    var birb = await connect()
-    var person = await birb.collection("people").findOne({ email: email });
-    if (!person)
-    {
-      return res
-        .status(404)
-        .json({ message: "Probably playing hide and seek again..." });
-    }
-    if (person.teams.length === 0)
-    {
-      return res.status(404).json({ message: "No teams? Gonna cry? 🥲" });
-    }
-    res.status(200).json({ hasTeams: true, email: email });
-  }catch(err){
-    console.log(err);
-    next(err);
-  }
+router.post("/checkTeams", async function (req, res, next)
+{
+   try
+   {
+      var { email } = req.body;
+      var birb = await connect()
+      var person = await birb.collection("people").findOne({ email: email });
+      if (!person)
+      {
+         return res
+            .status(404)
+            .json({ message: "Probably playing hide and seek again..." });
+      }
+      if (person.teams.length === 0)
+      {
+         return res.status(404).json({ message: "No teams? Gonna cry? 🥲" });
+      }
+      res.status(200).json({ hasTeams: true, email: email });
+   } catch (err)
+   {
+      console.log(err);
+      next(err);
+   }
 })
 
-router.patch("/:userEmail/password", async function(req, res, next){
-  try{
-    var email = req.params.userEmail
-    var { newPassword  } = req.body;
-    var birb = await connect()
-    var hash = await encrypt.hash(newPassword, 10)
-    var person = await birb.collection("people").findOneAndUpdate({email: email}, { $set: { password: newPassword  }});
-    if (!person)
-    {
-      return res
-        .status(404)
-        .json({ error: "Looks like this one was miscarried..." });
-    }
-    res.status(200).json({message: "You have ascended"})
-  }catch(err){
-    console.log(err)
-  }
+router.patch("/:userEmail/password", async function (req, res, next)
+{
+   try
+   {
+      var email = req.params.userEmail
+      var { newPassword } = req.body;
+      var birb = await connect()
+      var hash = await encrypt.hash(newPassword, 10)
+      var person = await birb.collection("people").findOneAndUpdate({ email: email }, { $set: { password: newPassword } });
+      if (!person)
+      {
+         return res
+            .status(404)
+            .json({ error: "Looks like this one was miscarried..." });
+      }
+      res.status(200).json({ message: "You have ascended" })
+   } catch (err)
+   {
+      console.log(err)
+   }
 })
 
-router.patch("/:userEmail/email", async function(req, res, next){
-  try{
-    var email = req.params.userEmail;
-    var { newEmail } = req.body;
-    var birb = await connect()
-    var person = await birb.collection("people").findOneAndUpdate({email: email}, { $set: { email: newEmail }});
-    if (!person)
-    {
-      return res
-        .status(404)
-        .json({ error: "Looks like this one was miscarried..." });
-    }
-    res.status(200).json({message: "You have ascended"})
-  }catch(err){
-    console.log(err)
-  }
+router.patch("/:userEmail/email", async function (req, res, next)
+{
+   try
+   {
+      var email = req.params.userEmail;
+      var { newEmail } = req.body;
+      var birb = await connect()
+      var person = await birb.collection("people").findOneAndUpdate({ email: email }, { $set: { email: newEmail } });
+      if (!person)
+      {
+         return res
+            .status(404)
+            .json({ error: "Looks like this one was miscarried..." });
+      }
+      res.status(200).json({ message: "You have ascended" })
+   } catch (err)
+   {
+      console.log(err)
+   }
 })
 
 module.exports = router;
