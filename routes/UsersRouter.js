@@ -103,6 +103,14 @@ router.post("/register", async function (req, res, next)
    try
    {
       var { name, surname, email, password, selectedleague } = req.body;
+      var birb = await connect()
+      var birth = await birb.collection("people").findOne({
+         email: email,
+         "leagues": selectedleague
+      })
+      if(birth){
+         return res.status(409).json({error: "Some science law states that no one can exist in two places at the same time..."})
+      }
       var newPerson = new Person({
          name: name,
          surname: surname,
@@ -110,7 +118,6 @@ router.post("/register", async function (req, res, next)
          password: password,
          leagues: [selectedleague]
       });
-      var birb = await connect()
       await birb.collection("people").insertOne(newPerson)
       res.status(201).json({ message: "You have given birth to a new person." });
    } catch (err)
