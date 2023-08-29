@@ -101,7 +101,6 @@ router.post("/register", async function (req, res, next)
    try
    {
       var { name, surname, email, password } = req.body;
-      var hash = await encrypt.hash(password, 10)
       var newPerson = new Person({
          name: name,
          surname: surname,
