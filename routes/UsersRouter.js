@@ -73,7 +73,7 @@ router.post("/checkCred", async function (req, res, next)
 {
    try
    {
-      var { email, password } = req.body;
+      var { email, password, selectedleague } = req.body;
       var birb = await connect()
       var person = await birb.collection("people").findOne({ email: email });
       if (!person)
@@ -82,10 +82,12 @@ router.post("/checkCred", async function (req, res, next)
             .status(404)
             .json({ error: "Probably playing hide and seek again..." });
       }
-      // var samesame = await encrypt.compare(password, person.password)
       if (person.password !== password)
       {
          return res.status(404).json({ message: "Stranger danger!" });
+      }
+      if(!person.leagues.includes(selectedleague)){
+         return res.status(403).json({error: "Get the hell outta here, you don't belong there fam"})
       }
       res.status(200).json({ message: "Ah yes, welcome back", email: email });
    } catch (err)
