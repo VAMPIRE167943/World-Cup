@@ -100,12 +100,13 @@ router.post("/register", async function (req, res, next)
 {
    try
    {
-      var { name, surname, email, password } = req.body;
+      var { name, surname, email, password, selectedleague } = req.body;
       var newPerson = new Person({
          name: name,
          surname: surname,
          email: email,
          password: password,
+         leagues: [selectedleague]
       });
       var birb = await connect()
       await birb.collection("people").insertOne(newPerson)
