@@ -7,10 +7,8 @@ var encrypt = require("bcrypt");
 // Base route: /users
 
 // Get all users
-router.get("/", async function (req, res, next)
-{
-   try
-   {
+router.get("/", async function (req, res, next) {
+   try {
       var birb = await connect();
       const users = await birb.collection("people").aggregate([
          {
@@ -22,18 +20,15 @@ router.get("/", async function (req, res, next)
       ]).toArray();
 
       res.status(200).json({ users })
-   } catch (err)
-   {
+   } catch (err) {
       console.error(err);
       next(err);
    }
 });
 
 // Get user details
-router.get("/:userEmail", async function (req, res, next)
-{
-   try
-   {
+router.get("/:userEmail", async function (req, res, next) {
+   try {
       var rank = 0
       var email = req.params.userEmail;
       var birb = await connect();
@@ -46,112 +41,99 @@ router.get("/:userEmail", async function (req, res, next)
          }
       ]).toArray();
 
-      users.forEach((user, index) =>
-      {
-         if (user.email == email)
-         {
+      users.forEach((user, index) => {
+         if (user.email == email) {
             rank = index + 1
          }
       })
       var person = await birb.collection("people").findOne({ email: email });
-      if (!person)
-      {
+      if (!person) {
          return res
             .status(404)
             .json({ error: "Looks like this one was miscarried..." });
       }
       res.status(200).json({ data: person, rank, message: "Gottem!" });
-   } catch (err)
-   {
+   } catch (err) {
       console.log(err);
       next(err);
    }
 });
 
 // Check credentials
-router.post("/checkCred", async function (req, res, next)
-{
-   try
-   {
+router.post("/checkCred", async function (req, res, next) {
+   try {
       var { email, password, selectedleague } = req.body;
       var birb = await connect()
       var person = await birb.collection("people").findOne({ email: email });
-      if (!person)
-      {
+      if (!person) {
          return res
             .status(404)
             .json({ error: "Probably playing hide and seek again..." });
       }
-      if (person.password !== password)
-      {
+      if (person.password !== password) {
          return res.status(404).json({ message: "Stranger danger!" });
       }
-      if(!person.leagues.includes(selectedleague)){
-         return res.status(403).json({error: "Get the hell outta here, you don't belong there fam"})
+      if (!person.leagues.includes(selectedleague)) {
+         return res.status(403).json({ error: "Get the hell outta here, you don't belong there fam" })
       }
       res.status(200).json({ message: "Ah yes, welcome back", email: email });
-   } catch (err)
-   {
+   } catch (err) {
       console.log(err);
       next(err);
    }
 });
 
 // Registers user
-router.post("/register", async function (req, res, next)
-{
-   try
-   {
+router.post("/register", async function (req, res, next) {
+   try {
       var { name, surname, email, password, selectedleague } = req.body;
       var birb = await connect()
       var birth = await birb.collection("people").findOne({
          email: email,
          "leagues": selectedleague
       })
-      if(birth){
-         return res.status(409).json({error: "Some science law states that no one can exist in two places at the same time..."})
+      if (birth) {
+         if (birth.leagues.includes(selectedleague)) {
+            return res.status(409).json({ error: "Some science law states that no one can exist in two places at the same time..." })
+         }
+         birth.leagues.push(selectedleague)
+         await birb.collection("people").updateOne({ email: email }, { $set: { leagues: birth.leagues } })
+         return res.status(201).json({ message: "Haaaaaaaa gotteeeeeeeem" })
       }
-      var newPerson = new Person({
+      var person = new Person({
          name: name,
          surname: surname,
          email: email,
          password: password,
          leagues: [selectedleague]
-      });
-      await birb.collection("people").insertOne(newPerson)
+      })
+      await birb.collection("people").insertOne(person)
       res.status(201).json({ message: "You have given birth to a new person." });
-   } catch (err)
-   {
+   } catch (err) {
       console.error(err);
       next(err);
    }
 });
 
 // Assign teams
-router.patch("/assignTeams", async function (req, res, next)
-{
-   try
-   {
+router.patch("/assignTeams", async function (req, res, next) {
+   try {
       var { email, teams } = req.body;
       var birb = await connect();
       var person = await birb.collection("people").findOneAndUpdate({ email: email }, { $set: { teams: teams } });
       var newConn = await connect()
       var selectedTeams = []
       var selectedIds = []
-      teams.forEach((team) =>
-      {
+      teams.forEach((team) => {
          selectedTeams.push(team)
          selectedIds.push(team.id)
       })
 
       const allTeams = await newConn.collection("teams").find().toArray()
       var pts = 0
-      teams.forEach((team, index) =>
-      {
-         allTeams.forEach((dbTeam) =>
-         {
-            if (dbTeam._id == team.id)
-            {
+      teams.forEach((team, index) => {
+         allTeams.forEach((dbTeam) => {
+            if (dbTeam._id == team.id) {
                selectedTeams[index]["pts"] = dbTeam.pts
                pts += dbTeam.pts
             }
@@ -161,84 +143,69 @@ router.patch("/assignTeams", async function (req, res, next)
       })
       console.log(pts)
       await newConn.collection("people").findOneAndUpdate({ email: email }, { $set: { pts: pts, teams: selectedTeams } })
-      if (!person)
-      {
+      if (!person) {
          return res
             .status(404)
             .json({ error: "Looks like this one was miscarried..." });
       }
       res.status(200).json({ message: "Hope you were lucky" })
-   } catch (err)
-   {
+   } catch (err) {
       console.log(err);
       next(err);
    }
 });
 
-router.post("/checkTeams", async function (req, res, next)
-{
-   try
-   {
+router.post("/checkTeams", async function (req, res, next) {
+   try {
       var { email } = req.body;
       var birb = await connect()
       var person = await birb.collection("people").findOne({ email: email });
-      if (!person)
-      {
+      if (!person) {
          return res
             .status(404)
             .json({ message: "Probably playing hide and seek again..." });
       }
-      if (person.teams.length === 0)
-      {
-         return res.status(404).json({ message: "No teams? Gonna cry? 🥲" });
+      if (person.teams.length === 0) {
+         return res.status(404).json({ hasTeams: false, message: "No teams? Gonna cry? 🥲" });
       }
       res.status(200).json({ hasTeams: true, email: email });
-   } catch (err)
-   {
+   } catch (err) {
       console.log(err);
       next(err);
    }
 })
 
-router.patch("/:userEmail/password", async function (req, res, next)
-{
-   try
-   {
+router.patch("/:userEmail/password", async function (req, res, next) {
+   try {
       var email = req.params.userEmail
       var { newPassword } = req.body;
       var birb = await connect()
       var hash = await encrypt.hash(newPassword, 10)
       var person = await birb.collection("people").findOneAndUpdate({ email: email }, { $set: { password: newPassword } });
-      if (!person)
-      {
+      if (!person) {
          return res
             .status(404)
             .json({ error: "Looks like this one was miscarried..." });
       }
       res.status(200).json({ message: "You have ascended" })
-   } catch (err)
-   {
+   } catch (err) {
       console.log(err)
    }
 })
 
-router.patch("/:userEmail/email", async function (req, res, next)
-{
-   try
-   {
+router.patch("/:userEmail/email", async function (req, res, next) {
+   try {
       var email = req.params.userEmail;
       var { newEmail } = req.body;
       var birb = await connect()
       var person = await birb.collection("people").findOneAndUpdate({ email: email }, { $set: { email: newEmail } });
-      if (!person)
-      {
+      if (!person) {
          return res
             .status(404)
             .json({ error: "Looks like this one was miscarried..." });
       }
       res.status(200).json({ message: "You have ascended" })
-   } catch (err)
-   {
+   } catch (err) {
       console.log(err)
    }
 })
