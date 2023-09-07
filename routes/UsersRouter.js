@@ -89,24 +89,20 @@ router.post("/register", async function (req, res, next) {
       var { name, surname, email, password, selectedleague } = req.body;
       var birb = await connect()
       var birth = await birb.collection("people").findOne({
-         email: email,
-         "leagues": selectedleague
+         email: email
       })
       if (birth) {
-         if (birth.leagues.includes(selectedleague)) {
-            return res.status(409).json({ error: "Some science law states that no one can exist in two places at the same time..." })
-         }
-         birth.leagues.push(selectedleague)
-         await birb.collection("people").updateOne({ email: email }, { $set: { leagues: birth.leagues } })
-         return res.status(201).json({ message: "Haaaaaaaa gotteeeeeeeem" })
+         await birb.collection("people").updateOne({email: email}, {$addToSet: {leagues: selectedleague}})
+         return res.status(200).json({ message: "U... R... Adopted..." })
       }
-      var person = new Person({
+      var person = {
          name: name,
          surname: surname,
          email: email,
          password: password,
-         leagues: [selectedleague]
-      })
+         leagues: [selectedleague],
+         teams: []
+      }
       await birb.collection("people").insertOne(person)
       res.status(201).json({ message: "You have given birth to a new person." });
    } catch (err) {
@@ -134,8 +130,8 @@ router.patch("/assignTeams", async function (req, res, next) {
       teams.forEach((team, index) => {
          allTeams.forEach((dbTeam) => {
             if (dbTeam._id == team.id) {
-               selectedTeams[index]["pts"] = dbTeam.pts
-               pts += dbTeam.pts
+               selectedTeams[index]["pts"] = (dbTeam.pts == undefined) ? 0 : dbTeam.pts
+               pts += (dbTeam.pts == undefined) ? 0 : dbTeam.pts
             }
 
          })
