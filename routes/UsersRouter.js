@@ -18,8 +18,13 @@ router.get("/", async function (req, res, next) {
             }
          }
       ]).toArray();
-      delete users.password
-      res.status(200).json({ users })
+      var filteredUsers= []
+      users.forEach((user)=>{
+        var filteredUser = user
+         delete filteredUser.password
+        filteredUsers.push(filteredUser)
+      })
+      res.status(200).json({ filteredUsers })
    } catch (err) {
       console.error(err);
       next(err);
