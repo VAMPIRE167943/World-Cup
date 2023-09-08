@@ -18,7 +18,7 @@ router.get("/", async function (req, res, next) {
             }
          }
       ]).toArray();
-
+      delete users.password
       res.status(200).json({ users })
    } catch (err) {
       console.error(err);
