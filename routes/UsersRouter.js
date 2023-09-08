@@ -95,14 +95,14 @@ router.post("/register", async function (req, res, next) {
          await birb.collection("people").updateOne({email: email}, {$addToSet: {leagues: selectedleague}})
          return res.status(200).json({ message: "U... R... Adopted..." })
       }
-      var person = {
+      var person = new Person({
          name: name,
          surname: surname,
          email: email,
          password: password,
          leagues: [selectedleague],
          teams: []
-      }
+      })
       await birb.collection("people").insertOne(person)
       res.status(201).json({ message: "You have given birth to a new person." });
    } catch (err) {
