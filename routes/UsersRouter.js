@@ -22,9 +22,10 @@ router.get("/", async function (req, res, next) {
       users.forEach((user)=>{
         var filteredUser = user
          delete filteredUser.password
+         delete filteredUser.email
         filteredUsers.push(filteredUser)
       })
-      res.status(200).json({ filteredUsers })
+      res.status(200).json({ users: filteredUsers })
    } catch (err) {
       console.error(err);
       next(err);
