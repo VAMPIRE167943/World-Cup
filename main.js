@@ -125,7 +125,7 @@ const apiMatches = matches
 APITools.checkConn()
    .then(async (status) =>
    {
-      APIUp = false
+      APIUp = status
       if (APIUp)
       {
          apiMatches()
