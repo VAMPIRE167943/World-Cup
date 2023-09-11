@@ -182,7 +182,6 @@ router.patch("/:userEmail/password", async function (req, res, next) {
       var email = req.params.userEmail
       var { newPassword } = req.body;
       var birb = await connect()
-      var hash = await encrypt.hash(newPassword, 10)
       var person = await birb.collection("people").findOneAndUpdate({ email: email }, { $set: { password: newPassword } });
       if (!person) {
          return res
