@@ -1,7 +1,6 @@
 var express = require("express");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
-var { Person } = require("./models/person.js");
 var cors = require("cors")
 var { APITools } = require("./APImodule.js")
 var cron = require("node-cron")
