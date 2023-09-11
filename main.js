@@ -33,18 +33,18 @@ app.use(limiter)
 
 var APIUp = false
 
-
+app.get("*", function(req, res, next){
+   var clientip = req.ip
+   console.log(clientip)
+})
 
 app.use(function (err, req, res, next)
 {
-   var clientip = req.ip
-   console.log(`This bro: ${clientip}`)
    res.locals.message = err.message;
    res.locals.error = req.app.get("env") === "development" ? err : {};
    // render the error page
    res.status(err.status || 500);
    res.send("error");
-   next()
 });
 
 function matches()
