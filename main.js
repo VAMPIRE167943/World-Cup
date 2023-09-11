@@ -7,6 +7,7 @@ var { APITools } = require("./APImodule.js")
 var cron = require("node-cron")
 var { connect } = require("./mongo.js")
 var teams = require("./models/teams.js");
+var ratelimit = require("express-rate-limit")
 
 var mainRouter = require("./routes/MainRouter");
 var usersRouter = require("./routes/UsersRouter");
@@ -20,19 +21,31 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
+var limiter = ratelimit({
+   windowMS: 15 * 60 * 1000,
+   max: 100,
+   message: "stop lol"
+})
+
 app.use("/", mainRouter);
 app.use("/users", usersRouter);
 app.use("/teams", teamsRouter);
+app.use(limiter)
 
 var APIUp = false
 
+
+
 app.use(function (err, req, res, next)
 {
+   var clientip = req.ip
+   console.log(`This bro: ${clientip}`)
    res.locals.message = err.message;
    res.locals.error = req.app.get("env") === "development" ? err : {};
    // render the error page
    res.status(err.status || 500);
    res.send("error");
+   next()
 });
 
 function matches()
